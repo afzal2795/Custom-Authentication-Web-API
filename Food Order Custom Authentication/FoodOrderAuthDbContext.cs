@@ -12,5 +12,6 @@ namespace Food_Order_Custom_Authentication
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Food> Foods { get; set; }
     }
 }

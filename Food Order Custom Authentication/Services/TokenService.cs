@@ -20,18 +20,12 @@ namespace Food_Order_Custom_Authentication.Services
             var generatedToken = Guid.NewGuid().ToString();
             var options = new MemoryCacheEntryOptions()
                                 .SetAbsoluteExpiration(
-                                    TimeSpan.FromSeconds(60)
+                                    TimeSpan.FromMinutes(20)
                                     );
 
             _cache.Set(generatedToken, generatedToken, options);
             var encryptedToken = _protector.Protect(generatedToken);
             return encryptedToken;
-        }
-
-        private Token GenerateToken()
-        {
-            var token = new Token(Guid.NewGuid().ToString(), DateTime.Now.AddMinutes(1), 60);
-            return token;
         }
 
         public bool ValidateToken(string token)

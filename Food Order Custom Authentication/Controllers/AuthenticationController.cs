@@ -25,9 +25,17 @@ namespace Food_Order_Custom_Authentication.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<Food> Get()
         {
-            return new string[] { "New Jersey", "New York", "Texas", "Maxico" };
+            return _dbContext.Foods;
+        }
+
+        [HttpPost]
+        public IActionResult CreateFood(Food food)
+        {
+            _dbContext.Foods.Add(food);
+            _dbContext.SaveChanges();
+            return Ok("Successfully Created");
         }
 
         [AllowAnonymous]
@@ -41,8 +49,8 @@ namespace Food_Order_Custom_Authentication.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Authenticate")]
-        public IActionResult Login(string email, string password)
+        [HttpPost("Login")]
+        public IActionResult Authenticate(string email, string password)
         {
             var user = _dbContext.Users.SingleOrDefault(u => u.Email == email);
             var token = _customAuthenticationManager.Authenticate(email, password, user);
@@ -51,8 +59,8 @@ namespace Food_Order_Custom_Authentication.Controllers
             return Ok(token);
         }
 
-        [HttpPost("Unauthenticate")]
-        public IActionResult Logout()
+        [HttpPost("Logout")]
+        public IActionResult Unauthenticate()
         {
             string authorizationHeader = Request.Headers["Authorization"];
             var status = _customAuthenticationManager.Unauthenticate(authorizationHeader);

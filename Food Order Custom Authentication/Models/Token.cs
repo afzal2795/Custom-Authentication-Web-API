@@ -4,12 +4,10 @@
     {
         public string Value { get; set; }
         public DateTime ExpiryDate { get; set; }
-        public int ExpiresIn { get; set; }
-        public Token(string value, DateTime expiryDate, int expiresIn)
+        public Token(string value, DateTime expiryDate)
         {
             Value = value;
             ExpiryDate = expiryDate;
-            ExpiresIn = expiresIn;
         }
     }
 }
