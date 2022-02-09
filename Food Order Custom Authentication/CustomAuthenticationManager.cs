@@ -1,4 +1,6 @@
-﻿using Food_Order_Custom_Authentication.Services;
+﻿using Food_Order_Custom_Authentication.Models;
+using Food_Order_Custom_Authentication.Services;
+using BC = BCrypt.Net.BCrypt;
 
 namespace Food_Order_Custom_Authentication
 {
@@ -9,28 +11,10 @@ namespace Food_Order_Custom_Authentication
         {
             _tokenService = tokenService;
         }
-        public readonly Dictionary<string, string> Users = new Dictionary<string, string>
+
+        public string Authenticate(string email, string password, User user)
         {
-            { "test1", "password1" },
-            { "test2", "password2" }
-        };
-        private readonly Dictionary<string, string> tokens = new Dictionary<string, string>();
-
-        public IDictionary<string, string> Tokens => tokens;
-        //public string Authenticate(string email, string password)
-        //{
-        //    if (!Users.Any(u => u.Key == email && u.Value == password))
-        //        return null;
-        //    //use encrypted key 2.43 and 5.00
-        //    var token = Guid.NewGuid().ToString();
-        //    tokens.Add(token, email);
-        //    return token;
-
-        //}
-
-        public string Authenticate(string email, string password)
-        {
-            if (!Users.Any(u => u.Key == email && u.Value == password))
+            if (user == null || !BC.Verify(password, user.Password))
                 return null;
 
             var token = _tokenService.FetchToken();

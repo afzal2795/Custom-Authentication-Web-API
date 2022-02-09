@@ -1,9 +1,10 @@
-﻿namespace Food_Order_Custom_Authentication
+﻿using Food_Order_Custom_Authentication.Models;
+
+namespace Food_Order_Custom_Authentication
 {
     public interface ICustomAuthenticationManager
     {
-        IDictionary<string, string> Tokens { get; }
-        string Authenticate(String email, string password);
+        string Authenticate(String email, string password, User user);
         bool Unauthenticate(String token);
     }
 }

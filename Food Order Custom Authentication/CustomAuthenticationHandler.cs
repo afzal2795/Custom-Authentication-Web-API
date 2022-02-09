@@ -45,7 +45,7 @@ namespace Food_Order_Custom_Authentication
 
             try
             {
-                return ValidateToken2(token);
+                return ValidateToken(token);
             }
             catch (Exception ex)
             {
@@ -55,34 +55,15 @@ namespace Food_Order_Custom_Authentication
 
         public AuthenticateResult ValidateToken(string token)
         {
-            var validatedToken = _customAuthenticationManager.Tokens.FirstOrDefault(t => t.Key == token);
-            if (validatedToken.Key == null)
-            {
-                return AuthenticateResult.Fail("Unauthorized");
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, validatedToken.Value)
-            };
-
-            var identity = new ClaimsIdentity(claims, Scheme.Name);
-            var principal = new GenericPrincipal(identity, null);
-            var ticket = new AuthenticationTicket(principal, Scheme.Name);
-            return AuthenticateResult.Success(ticket);
-        }
-
-        public AuthenticateResult ValidateToken2(string token)
-        {
             var validatedToken = _tokenService.ValidateToken(token);
-            if (validatedToken == null)
+            if (!validatedToken)
             {
                 return AuthenticateResult.Fail("Unauthorized");
             }
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, validatedToken)
+                new Claim(ClaimTypes.Name, token)
             };
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);

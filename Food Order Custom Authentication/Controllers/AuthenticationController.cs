@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Food_Order_Custom_Authentication.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using BC = BCrypt.Net.BCrypt;
 
 namespace Food_Order_Custom_Authentication.Controllers
 {
@@ -9,9 +12,16 @@ namespace Food_Order_Custom_Authentication.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ICustomAuthenticationManager _customAuthenticationManager;
-        public AuthenticationController(ICustomAuthenticationManager customAuthenticationManager)
+        private readonly FoodOrderAuthDbContext _dbContext;
+        private readonly IDataProtector _protector;
+        public AuthenticationController(
+            ICustomAuthenticationManager customAuthenticationManager,
+            IDataProtectionProvider protector,
+            FoodOrderAuthDbContext dbContext)
         {
+            _protector = protector.CreateProtector(GetType().FullName);
             _customAuthenticationManager = customAuthenticationManager;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -21,10 +31,21 @@ namespace Food_Order_Custom_Authentication.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("Register")]
+        public IActionResult Register(User user)
+        {
+            user.Password = BC.HashPassword(user.Password);
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
+            return Ok(user);
+        }
+
+        [AllowAnonymous]
         [HttpPost("Authenticate")]
         public IActionResult Login(string email, string password)
         {
-            var token = _customAuthenticationManager.Authenticate(email, password);
+            var user = _dbContext.Users.SingleOrDefault(u => u.Email == email);
+            var token = _customAuthenticationManager.Authenticate(email, password, user);
             if (token == null)
                 return Unauthorized();
             return Ok(token);

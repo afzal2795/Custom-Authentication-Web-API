@@ -1,36 +1,19 @@
 ﻿using Food_Order_Custom_Authentication.TokenAuthentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Food_Order_Custom_Authentication.Services
 {
     public class TokenService : ITokenService
     {
-        private readonly IMemoryCache cache;
+        private readonly IMemoryCache _cache;
+        private readonly IDataProtector _protector;
 
-        public TokenService(IMemoryCache cache)
+        public TokenService(IMemoryCache cache, IDataProtectionProvider protector)
         {
-            this.cache = cache;
+            _cache = cache;
+            _protector = protector.CreateProtector(GetType().FullName);
         }
-
-        //public string FetchToken(string token)
-        //{
-        //    string generatedToken = string.Empty;
-
-        //    if (!cache.TryGetValue(token, out generatedToken))
-        //    {
-        //        var tokenmodel = this.GenerateToken();
-        //        var options = new MemoryCacheEntryOptions()
-        //                            .SetAbsoluteExpiration(
-        //                                TimeSpan.FromSeconds(tokenmodel.ExpiresIn)
-        //                             );
-
-        //        cache.Set(tokenmodel.Value, tokenmodel.Value, options);
-
-        //        generatedToken = tokenmodel.Value;
-        //    }
-
-        //    return generatedToken;
-        //}
 
         public string FetchToken()
         {
@@ -40,9 +23,9 @@ namespace Food_Order_Custom_Authentication.Services
                                     TimeSpan.FromSeconds(60)
                                     );
 
-            cache.Set(generatedToken, generatedToken, options);
-
-            return generatedToken;
+            _cache.Set(generatedToken, generatedToken, options);
+            var encryptedToken = _protector.Protect(generatedToken);
+            return encryptedToken;
         }
 
         private Token GenerateToken()
@@ -51,21 +34,23 @@ namespace Food_Order_Custom_Authentication.Services
             return token;
         }
 
-        public string ValidateToken(string token)
+        public bool ValidateToken(string token)
         {
+            token = _protector.Unprotect(token);
             var tokenValue = string.Empty;
-            if(cache.TryGetValue(token, out tokenValue))
-               return tokenValue;
-            return null;
+            if(_cache.TryGetValue(token, out tokenValue))
+               return true;
+            return false;
         }
 
         public bool DestroyToken(string token)
         {
+            token = _protector.Unprotect(token);
             string tokenValue = string.Empty;
-            var tokenExists = cache.TryGetValue(token, out tokenValue);
+            var tokenExists = _cache.TryGetValue(token, out tokenValue);
             if (tokenExists)
             {
-                cache.Remove(token);
+                _cache.Remove(token);
                 return true;
             }
             return false;

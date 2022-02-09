@@ -3,7 +3,7 @@
     public interface ITokenService
     {
         string FetchToken();
-        string ValidateToken(string token);
+        bool ValidateToken(string token);
         bool DestroyToken(string token);
     }
 }
